@@ -2,5 +2,70 @@
 				           (WGCNA)- Detailed Workflow	
 
 
+#### Basic premise of WGCNA
 
-	
+The basic idea behind Weighted gene co-expression netowork analysis is to identify genes with similar expression
+patterns. 
+We need o do this because most often, they are part of same complex or they are involved in the same pathwaysor regulatory mechanismsor may influence each other or maybe by the same underlying mechanisms.
+
+So, using any clustering method or a gene network analysis like Weighted Gene coexpression network analysis… estos métodos pueden ser usados para agrupar o clusterizar genes con patrones de expresión similares.
+
+These cluster of genes can be further used to investigate or study an underlying mechanisms or these could be potetntial biomarkers against which therapeutic agents or therapies can be tested against.
+
+
+Coexpress between 2 genes (Gene A y Gene B) está dado por el valor de r.
+por ejemplo r = 0.7
+
+
+
+#### WGCNA Workflow
+
+gene expression data --> Construct a Weighted correlation matrix --> Identify modules
+
+Identify modules: 
+ - correlate modules with phenotypes/traits
+ - identify driver genes
+
+This analysis starts with gene expression data obtained from either a microarray expreiment or RNA-seq experiment and, with that Matrix of genes quantification we construct a weighted correlation matrix and, then we perform some addiotional steps to identify modules.
+
+These modules are nothing but clusters of genes with very similar expression patterns.
+
+Once these cluster are identified, there are various other analysis that can be performed, some of the most commonly performed comparisons that are made using these cluster are to correlate these clusters with phenotypes or treats and, to identify driver genes within these modules.
+
+
+##### **Idea behind constructing networks**
+
+If we have some nodes, in our case genes and, we want to group these genes based on the expression patterns and, we want to group those genes that have similar expression patterns, so we would need some methods to measure the simmilarity between gene expression profiles across these genes.
+
+There could be various methods that one can use but, in case of Weitghted Gene Co-expression Network Analysis, we use correlation to meause similarities so, 2 genes are considered to be similar if they are highly correlated and we perform these correlations between all pairs of nodes.
+
+
+1° Step:
+So, ideally the first step here is to have a distance measure which basically measures the simmilarity between the nodes.
+
+
+2° Step:
+The next step, since we have these pairwise comparisons across all the genes, all the nodes, we want to highlight the connetions that are important and want to reduce the noise. 
+So, the 2nd step is to créate a sort of Matrix that highhlights the important connections and reduces the noise and, we do that by applying some threshold.
+
+What we get is an **Adjacency Matrix**.
+Los valores de esta Matrix son coonvertidos en medidas aproximadas which are used to perform clustering, so a pair of genes has high proximity if it is closely interconnected.
+
+In case of Weitghted Gene Co-expression network analysis, proximity measure is used to perform **Hierarchical Clustering** 
+
+So, once genes are clustered, one can identify and use these clusters of genes with very similar expression pattern which we also call as modules to make furter comparisons and perform additional downstream analysis.
+
+
+4.55
+
+
+
+
+
+
+
+
+
+
+
+
