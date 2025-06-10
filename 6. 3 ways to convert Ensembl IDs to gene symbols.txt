@@ -1,0 +1,482 @@
+			3 ways to convert Ensembl IDs to gene symbols | Bioinformatics 101
+
+In this video I cover how to convert Ensembl gene IDs to Gene Symbols using 3 methods - Biomart's web interface & biomaRt R package, annotables R package and AnnotationDbi R package. 
+
+
+https://www.youtube.com/watch?v=cWe359VnfaY&list=PLJefJsd1yfhbIhblS-85alaFsPdU00DaA&index=9
+
+
+We all  have dealt with gene list some point, and these gene lists have been derived different express analysis where we have a lists of differentially expressed genes or trancripts or the lists of genes that are involved in a particular pathway.
+These genes are in different formats:
+ .format of ensemble id.
+ .refseq id.
+ .entries id.
+
+Oftentimes we are required to convert the ids from one format to the other.
+
+
+METHODS AVAILABLE
+
+1. BioMart web and biomaRt R Package
+2. Annotable R package
+3. AnnotationDbi
+
+
+1#-.Ensembl BioMart 
+Is a powerful web tool for permorming complex querying (realizar consultas complejas) and filtering of various ensemble databases.
+It is often used for id mappings and feature extraction
+
+
+2#-.Annotable R package
+Recupera los datos de BioMart. Clean up the column names and save the data as an R data package called anotable which is accesible to all of us so we can generate the gene id mappings
+
+
+3#-.AnnotationDbi
+Tb es un paquete de R que nos provee de una interface para conectar y consultar varias bases de datos anotadas usando SQL como almacenamiento de datos.
+
+
+
+
+Ensembl es un proyecto de bioinformática que proporciona bases de datos y herramientas gratuitas para el análisis de genomas. Fue desarrollado por el European Bioinformatics Institute (EMBL-EBI) y el Wellcome Sanger Institute. Su propósito principal es facilitar la exploración y anotación de información genómica de diversas especies, incluyendo:
+
+Genomas de referencia: Mapas detallados de los genomas de organismos como humanos, ratones, moscas, peces y más.
+Anotación genética: Identificación y descripción de genes, ARN, proteínas y regiones funcionales del ADN.
+Herramientas bioinformáticas: Permite realizar búsquedas, comparaciones genómicas, análisis de variantes, entre otros.
+En resumen, Ensembl es una plataforma fundamental para la investigación genética, particularmente en el análisis comparativo de genomas y en estudios de variantes genéticas relacionadas con enfermedades o características biológicas.
+
+
+	###### ensembl. ID format ######
+
+ENST00000258743.10
+ENSMUSG00000017167.6
+
+ENS: ensemble id 
+MUS: Species - code which is a three-letter. For human there is no species code.
+
+ObjectType
+E: exon 
+FM: protein family
+G: gene
+GT: gene tree
+P: protein
+R: regulatory feature
+T: transcript
+
+Identifier: number. ejemplo: 00000017167
+Versión number: especifica el número de veces que el modelo fue cambiado durante el tiempo
+
+
+
+
+
+					###### Código R #########
+
+#### input list of Ensembl ID's ####
+ensembl.ids <- read.delim('gene_ids.txt', header = F)
+
+Read in the ensemble gene ids
+> ensembl.ids
+               V1
+1 ENSG00000139618
+2 ENSG00000171094
+3 ENSG00000109132
+4 ENSG00000152256
+5 ENSG00000105369
+
+
+
+# METHOD 1: biomaRt
+The first thing we did on bioMart's web interface was to choose the data set.
+We do the same thing here and in order to get the list of available data set we run a function called list ensembl
+
+- listEnsembl() nos muestra los datos disponibles de la base de datos así como los valores de esa database.
+
+
+listEnsembl()
+listEnsembl(mirror = "uswest")
+
+> listEnsembl(mirror = "uswest")
+        biomart                version
+1         genes      Ensembl Genes 113
+2 mouse_strains      Mouse strains 113
+3          snps  Ensembl Variation 113
+4    regulation Ensembl Regulation 113
+
+
+If you want to use database genes: Ensembl Genes 113 
+we need to use values genes to indicate that we are intending to use this database
+
+
+
+### Entonces seleccionamos la database, so we use the function: useEnsembl() ####
+
+ensembl <- useEnsembl(biomart = "genes")
+
+En el primer parámetro biomart le pongo el valor de genes que viene de la lista Ensembl
+1         genes      Ensembl Genes 113
+
+"genes" indica la database que queremos usar
+
+
+
+
+### Elegimos el dataset ###
+Después de elegir el database, la próxima cosa que necesitamos hacer es conocer el dataset que queremos usar así que vamos a usar la función 
+
+---- listDatasets(ensembl) ----
+
+datasets <- listDatasets(ensembl)
+
+> head(datasets)
+                       dataset                           description     version
+1 abrachyrhynchus_gene_ensembl Pink-footed goose genes (ASM259213v1) ASM259213v1
+2     acalliptera_gene_ensembl      Eastern happy genes (fAstCal1.3)  fAstCal1.3
+3   acarolinensis_gene_ensembl       Green anole genes (AnoCar2.0v2) AnoCar2.0v2
+4    acchrysaetos_gene_ensembl       Golden eagle genes (bAquChr1.2)  bAquChr1.2
+5    acitrinellus_gene_ensembl        Midas cichlid genes (Midas_v5)    Midas_v5
+6    amelanoleuca_gene_ensembl       Giant panda genes (ASM200744v2) ASM200744v2
+
+Este datasets vemos que tiene 214 observaciones, es decir, 214 data sets disponibles.
+Así que vamos a usar el Filter, porque los datasets en los que estamos interesados es en Human, entonces ponemos en Filter, description: human.
+
+En el datasets ponemos el filter.
+Este dataset se corresponde con el human genes,por lo que este es el dataset que quiero usar.
+
+Ahora que ya tenemos lo que quiero usar que serían:
+- database: ensembl
+- dataset: genes
+
+ensembl <- useEnsembl(biomart = "genes")
+datasets <- listDatasets(ensembl)
+
+(Esto es lo mismo que hicimos en el BioMart web en la página de Ensembl, primero seleccionamos el database que era Ensemble genes, y luego el dataset que era Human gene).
+
+
+
+
+### Conectar el database con el dataset ###
+Luego de hacer esto vamos a hacer la conexión usando --> useMart()
+El 1er parámetro es el nombre de la database y el 2do parámetro es el nombre del dataset.
+
+ensembl.conection <- useMart("ensembl", dataset = 'hsapiens_gene_ensembl')
+
+'hsapiens_gene_ensembl' --> esto lo sacamos al entrar en el dataset y poner el Filter en description: human.
+
+
+
+
+##### built the query #####
+-función para obtener los atributos, me fijo y en el filtro pongo "gene name" y "gene stable id"
+-Una vez que conectamos el database con el dataset hacemos el built the query
+
+
+getBM(attributes = ,
+      filters = "",
+      values = ,
+      mart = ensembl.conection)
+
+
+Usamos la función getBM() para obtener varias cosas como los atributos, filtros, valores y mart.
+
+Los atributos vamos a poner los datos o columnas que nosotros queramos recibir o que nos interesen,
+Los filtros son para poner restricciones en los datos, son los inputs en el query, requerimentos.
+Values son los valores de los filtros.
+Mart será el ensemble connection
+
+
+
+
+#### Necesitamos recuperar los Atributos ####
+Entonces, para definir qué datos queremos recuperar, necesitamos recuperar los atributos, así que existe una función  ---->  listAttributes()
+
+A esta función le vamos a proveer el ensembl.conection
+
+El ensembl.conection era: La variable donde guardamos la conexión entre a base de datos y el conjunto de datos.
+ensembl.conection <- useMart("ensembl", dataset = 'hsapiens_gene_ensembl')
+Y la guardamos en la variable attr
+
+
+attr <- listAttributes(ensembl.conection)
+
+> head(attr)
+                           name                  description         page
+1               ensembl_gene_id               Gene stable ID feature_page
+2       ensembl_gene_id_version       Gene stable ID version feature_page
+3         ensembl_transcript_id         Transcript stable ID feature_page
+4 ensembl_transcript_id_version Transcript stable ID version feature_page
+5            ensembl_peptide_id            Protein stable ID feature_page
+6    ensembl_peptide_id_version    Protein stable ID version feature_page
+
+
+Seleccionamos attr y vamos al Filtro, en description pongo: gene name
+Es lo primero que necesitamos, al poner gene name, en la columna name nos sale external_gene_name
+
+Otra de las cosas que queremos recuperar de esto es el original gene ids: Filter descriptio: gene stable
+Este se corresponde en la columna name con ensemble_gene_id.
+
+Entonces vamos a usar estos 2 valores:
+-external_gene_name
+-ensemble_gene_id
+
+
+getBM(attributes = c('ensembl_gene_id','external_gene_name'),
+      filters = "",
+      values = '',
+      mart = ensembl.conection)
+
+
+
+
+### Necesitamos obtener los filtros ###
+Igual que en el caso de los atributos podemos obtener la lista de filtros, también tenemos una función para esto y se le provee el ensemble.conection al igual que en el caso de los atributos.
+
+filters <- listFilters(ensembl.conection)
+
+> head(filters)
+             name              description
+1 chromosome_name Chromosome/scaffold name
+2           start                    Start
+3             end                      End
+4      band_start               Band Start
+5        band_end                 Band End
+6    marker_start             Marker Start
+
+También nos vamos  a filters y usamos el Filtro para buscar en description el nombre que nos interesa que está en la columna name.
+Buscamos gene stable, que se corresponde con el ensembl_gene_id
+
+Copiamos el nombre del filtro y lo pegamos en el objeto general, en el getBM()
+
+ 
+getBM(attributes = c('ensembl_gene_id','external_gene_name'),
+      filters = "ensembl_gene_id",
+      values = '',
+      mart = ensembl.conection)
+
+
+
+
+### Values ###
+Los valores serán aquellos para los filtros que hemos definido, por lo que aquí vamos a proveer los ensemble.id de la columna 1 porque los gene ids están presentes en ensemble
+
+
+getBM(attributes = c('ensembl_gene_id','external_gene_name'),
+      filters = "ensembl_gene_id",
+      values = 'ensembl.ids$V1',
+      mart = ensembl.conection)
+
+---- CON ESTO FINALIZAMOS DE CONSTRUIR EL QUERY. ----
+
+Al correr esto obtenemos:
+
+  ensembl_gene_id external_gene_name
+1 ENSG00000105369              CD79A
+2 ENSG00000109132             PHOX2B
+3 ENSG00000139618              BRCA2
+4 ENSG00000152256               PDK1
+5 ENSG00000171094                ALK
+
+
+
+----------------------------------------------------------------------------------------------------------------
+El error indica que el servicio principal de Ensembl no está disponible en este momento. Este problema puede ocurrir cuando los servidores de Ensembl están temporalmente caídos o en mantenimiento. Afortunadamente, el paquete `biomaRt` permite usar **sitios espejo (mirrors)** para acceder a los datos. Aquí tienes cómo solucionarlo:
+
+---
+
+### 1. **Usar un sitio espejo con `listEnsembl()`**
+Puedes intentar acceder a un sitio espejo utilizando el argumento `mirror`. Por ejemplo:
+
+```R
+listEnsembl(mirror = "uswest")
+```
+
+Los sitios espejo disponibles son:
+- `"useast"`: Servidor en la costa este de EE. UU.
+- `"uswest"`: Servidor en la costa oeste de EE. UU.
+- `"asia"`: Servidor en Asia.
+
+---
+
+### 2. **Probar la conexión directamente**
+Si estás intentando usar `useEnsembl()` después de `listEnsembl()`, puedes especificar el sitio espejo directamente:
+
+```R
+ensembl <- useEnsembl(biomart = "ensembl", dataset = "hsapiens_gene_ensembl", mirror = "useast")
+```
+
+Esto intentará conectarse al servidor de la costa este de EE. UU.
+
+---
+
+### 3. **Comprobar el estado del servicio**
+Puedes verificar si el servicio principal de Ensembl está operativo visitando la página de estado de Ensembl:  
+[https://status.ensembl.org](https://status.ensembl.org)
+
+---
+
+### 4. **Usar una versión archivada de Ensembl**
+Si necesitas datos de una versión específica y el servidor principal no está disponible, puedes usar una versión archivada:
+
+```R
+ensembl <- useEnsembl(biomart = "ensembl", version = 108)
+```
+
+O lista todas las versiones archivadas disponibles:
+
+```R
+listEnsembl(archive = TRUE)
+```
+
+---
+
+### 5. **Actualizar `biomaRt` y R**
+Asegúrate de estar usando la última versión del paquete y de R para garantizar compatibilidad con los servicios actuales:
+
+```R
+BiocManager::install("biomaRt", force = TRUE)
+```
+
+---
+
+Si después de probar estas soluciones sigue sin funcionar, el problema podría ser de los servidores Ensembl o una restricción de red local. En ese caso, puedes intentar más tarde o considerar descargar datos directamente desde la web de Ensembl y procesarlos localmente. 😊
+----------------------------------------------------------------------------------------------------------------
+
+
+# METHOD 2: annotables
+
+grch38 %>%
+  filter(ensgene %in% ensembl.ids$V1)
+
+Al correr grch38 obtenemos una tabla con toda la información correspondiente on los gene_ids, gene symbols, chr, etc.
+Entonces usaremos un filtro para obtener aquellos genes que están presentes en nuestros genes_ids
+
+Usamos la función filter()
+
+ensgene: se corresponde con la columna en la tabla donde tenemos todos los ensembl_ids de los genes
+ensemble.ids: es nuestra variable con los genes ensembl_ids nuestros y 
+$V1 es porque están en la columna 1.
+
+> ensembl.ids
+               V1
+1 ENSG00000139618
+2 ENSG00000171094
+3 ENSG00000109132
+4 ENSG00000152256
+5 ENSG00000105369
+
+> grch38
+# A tibble: 75,118 × 9
+   ensgene         entrez symbol   chr       start       end strand biotype     description
+   <chr>            <int> <chr>    <chr>     <int>     <int>  <int> <chr>       <chr>      
+ 1 ENSG00000000003   7105 TSPAN6   X     100627108 100639991     -1 protein_co… tetraspani…
+ 2 ENSG00000000005  64102 TNMD     X     100584936 100599885      1 protein_co… tenomodulin
+ 3 ENSG00000000419   8813 DPM1     20     50934867  50959140     -1 protein_co… dolichyl-p…
+ 4 ENSG00000000457  57147 SCYL3    1     169849631 169894267     -1 protein_co… SCY1 like …
+ 5 ENSG00000000460  55732 C1orf112 1     169662007 169854080      1 protein_co… chromosome…
+ 6 ENSG00000000938   2268 FGR      1      27612064  27635185     -1 protein_co… FGR proto-…
+ 7 ENSG00000000971   3075 CFH      1     196651754 196752476      1 protein_co… complement…
+ 8 ENSG00000001036   2519 FUCA2    6     143494812 143511720     -1 protein_co… alpha-L-fu…
+ 9 ENSG00000001084   2729 GCLC     6      53497341  53616970     -1 protein_co… glutamate-…
+10 ENSG00000001167   4800 NFYA     6      41072974  41102403      1 protein_co… nuclear tr…
+# ℹ 75,108 more rows
+# ℹ Use `print(n = ...)` to see more rows
+
+
+
+grch38 %>%
+  filter(ensgene %in% ensembl.ids$V1)
+
+-. Al correr esto, obtendremos toda la información correspondiente a los genes ids que están presentes en nuestra lista, los nuestros.
+
+
++   filter(ensgene %in% ensembl.ids$V1)
+# A tibble: 5 × 9
+  ensgene         entrez symbol chr       start       end strand biotype        description
+  <chr>            <int> <chr>  <chr>     <int>     <int>  <int> <chr>          <chr>      
+1 ENSG00000105369    973 CD79A  19     41877279  41881372      1 protein_coding CD79a mole…
+2 ENSG00000109132   8929 PHOX2B 4      41744082  41748725     -1 protein_coding paired lik…
+3 ENSG00000139618    675 BRCA2  13     32315086  32400268      1 protein_coding BRCA2 DNA …
+4 ENSG00000152256   5163 PDK1   2     172555373 172608669      1 protein_coding pyruvate d…
+5 ENSG00000171094    238 ALK    2      29192774  29921586     -1 protein_coding ALK recept…
+
+
+
+
+
+# METHOD 3: annotation DBs
+En este caso hacemos un mapeo de los Ids
+
+mapIds(EnsDb.Hsapiens.v86,
+       keys = ,
+       keytype = '',
+       column = '')
+
+Le proveemos la base de datos Hsapiens.v86
+Y luego de forma similar al getBM que íbamos obteniendo los filtros, los atributos y le proveíamos los valores, aquí hacemos lo mismo, tenemos que proveer las keys, los keytypes y la columna.
+
+
+
+..keys --> se corresponden con nuestros values, los genes_ids nuestros  ---> ensembl.ids$V1
+
+mapIds(EnsDb.Hsapiens.v86,
+       keys = ensembl.ids$V1,
+       keytype = '',
+       column = '')
+
+
+
+
+..keytype --> tenemos que proveer cuál es el tipo de información de esas keys (values). Este se correspondería con los filtros.
+
+Para eso lo obtenemos con esto  --->  keytypes(org.Hs.eg.db)
+
+Al correr obtenemos:
+
+> keytypes(org.Hs.eg.db)
+ [1] "ACCNUM"       "ALIAS"        "ENSEMBL"      "ENSEMBLPROT"  "ENSEMBLTRANS"
+ [6] "ENTREZID"     "ENZYME"       "EVIDENCE"     "EVIDENCEALL"  "GENENAME"    
+[11] "GENETYPE"     "GO"           "GOALL"        "IPI"          "MAP"         
+[16] "OMIM"         "ONTOLOGY"     "ONTOLOGYALL"  "PATH"         "PFAM"        
+[21] "PMID"         "PROSITE"      "REFSEQ"       "SYMBOL"       "UCSCKG"      
+[26] "UNIPROT"  
+ 
+Elegimos este: "ENSEMBL"
+
+mapIds(EnsDb.Hsapiens.v86,
+       keys = ensembl.ids$V1,
+       keytype = 'ENSEMBL',
+       column = '')
+
+
+
+..column --> se corresponderían con los atributos.
+
+Tb para obtenerlo: columns(org.Hs.eg.db)
+
+> columns(org.Hs.eg.db)
+ [1] "ACCNUM"       "ALIAS"        "ENSEMBL"      "ENSEMBLPROT"  "ENSEMBLTRANS"
+ [6] "ENTREZID"     "ENZYME"       "EVIDENCE"     "EVIDENCEALL"  "GENENAME"    
+[11] "GENETYPE"     "GO"           "GOALL"        "IPI"          "MAP"         
+[16] "OMIM"         "ONTOLOGY"     "ONTOLOGYALL"  "PATH"         "PFAM"        
+[21] "PMID"         "PROSITE"      "REFSEQ"       "SYMBOL"       "UCSCKG"      
+[26] "UNIPROT" 
+
+El dato en el que estamos interesados es "SYMBOL"
+
+
+Finalmente nos queda así:
+
+mapIds(EnsDb.Hsapiens.v86,
+       keys = ensembl.ids$V1,
+       keytype = 'ENSEMBL',
+       column = 'SYMBOL')
+
+Al correr esto vemos que cada gene_ensembl_id se corresponde con el nombre de cada gen.
+
+ENSG00000139618 ENSG00000171094 ENSG00000109132 ENSG00000152256 ENSG00000105369 
+        "BRCA2"           "ALK"        "PHOX2B"          "PDK1"         "CD79A" 
+
+
+
+
+
+

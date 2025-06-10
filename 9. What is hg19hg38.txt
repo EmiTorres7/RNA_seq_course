@@ -1,0 +1,59 @@
+					      What is hg19/hg38?
+			       All you need to know about human reference genomes
+
+https://www.youtube.com/watch?v=DeZTPCOKZrg&list=PLJefJsd1yfhbIhblS-85alaFsPdU00DaA&index=14
+
+
+We have used a reference genoma while we were quantifying our RNA sequence
+
+- Qué es
+- How are they build
+- Cuáles son las diferentes versiones disponibles que deberíamos usar
+
+
+
+1) ### What is reference genoma? ###
+ 
+Is a library or database de secuencias de ácidos nucleicos representando un conjunto completo de genes from a species, so a human reference genoma is created from the DNA of different donor individuals and therfore it does
+not represent the set of genes of any individual person.
+
+So, if you were to take  the sequence of the reference human genoma, you are not able to match it to one individual because it is stitched toghether from the genes of different individuals.
+
+La Calidad y la sensibilidad de tu análisis aumenta cuando  el genoma de referencia es más representativo o de un grupo más amplio de individuos.
+
+Tener en cuenta que reference genoma are just an idea of what a normal organism's genoma should look like.
+So, reference genoma is not a healthy genoma, it is not most commonly observed, it is not the longest, it's not ancentral, it is not the average of the global population,
+But rather it is peculiar since the reference genoma was built not from one individual but from donors, so the reference genoma is peculiar to those specific donors.
+
+
+-- Why sequence full human genoma? --
+
+The human reference genoma ultimately is used for sample comparison with single individual genomes to show genomic differences and similarities as well to solve biological questions.
+
+Some reference genoma applications include identification of all genes, understanding the role of these genes, also discovering novel regulatory regions understanding how these regulatory regions play a role in various mechanisms.
+
+Also, it is used to identify gene mutations and variants which can cause diseases.
+Understand these variants and mutations can help create better treatment
+
+
+
+
+2) ### How is a reference genoma created? ###
+
+Reference genoma are prepared through a process called De novo genoma sequencing.
+De novo genoma sequencing occurs cuando los científicos secuencian y ensamblan un genoma desde cero sin usar un genoma de referencia para alineamiento.
+
+Así que para esto, los científicos crearon muchas copias de ADN de interés ya que el genoma de referencia fue creado a partir de múltiples donores.
+El ADN genómico de interés fue de múltiples donores and that was chopped up into fragments of various sizes and then all the sequence pieces, which are called reads, are assenbled back together to produce the whole genoma sequence.
+
+The order of the reads can be computationally inferred by detecting overlapping regions between the reads.
+A mayor similitud entre el final de una read y el comienzo de otra read, the more likely that they are originating from overlapping sections of the genoma.
+
+min 5
+
+
+
+
+
+
+

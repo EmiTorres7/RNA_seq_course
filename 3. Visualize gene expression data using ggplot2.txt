@@ -1,0 +1,244 @@
+		 Visualize gene expression data in R using ggplot2 | Bioinformatics for beginners
+
+https://www.youtube.com/watch?v=RukuTtiY4Sg&list=PLJefJsd1yfhbIhblS-85alaFsPdU00DaA&index=3
+
+
+	How o visualize gene expresión data in R using ggplot2
+
+Visualize gene expresión (RNA-Seq) data as:
+
+- Bar plots
+- Density plots
+- Boxplots
+- Scatterplots
+- Heatmap
+
+# dat.long to be used generated from previous demo
+# dat.long <- read.delim('../data/GSE183947_long_format.txt', header = T)
+
+file.choose()
+data <- read.csv(file = "C:\\Bioinformática\\RNA Sequencing\\GSE_GEO_DataSet\\GSE183947_fpkm.csv\\GSE183947_fpkm.csv")
+dim(data)
+head(data)
+summary(data)
+
+> head(data)
+         X CA.102548 CA.104338 CA.105094 CA.109745 CA.1906415 CA.1912627
+1   TSPAN6      0.93      1.97      0.00      5.45       4.52       4.75
+2     TNMD      0.00      0.00      0.00      0.00       0.00       0.00
+3     DPM1      0.00      0.43      0.00      3.43       8.45       8.53
+4    SCYL3      5.78      5.17      8.76      4.58       7.20       6.03
+5 C1orf112      2.83      6.26      3.37      6.24       5.16      13.69
+6      FGR      4.80      1.83      0.00      4.23      15.87       8.56
+
+#Matrix 
+Rows: Genes
+Columns: Samples
+
+En esta Matriz no tengo información sobre cuál muestra corresponde a la sample normal o a la tumor sample.
+Esta información la obtengo del metadata file. La puedo descargar del NCBI pero lo que se suele hacer es obtenerla a partir del GEO QUERY package 
+
+
+The counts are the number of reads mapping to that gene in that sample.
+Counts measure gene expression.
+
+                SRR1039508 
+ENSG00000000003        679
+
+679 sería el conteo de las lecturas (reads) que mide la expresión de ese gen ENSG00000000003 en la muestra SRR1039508.
+
+
+
+data.long %>% 
+  head()
+
+> data.long %>% 
++   head()
+      gene   samples FPKM      title       tissue metastasis
+1   TSPAN6 CA.102548 0.93 tumor rep1 breast tumor        yes
+2     TNMD CA.102548 0.00 tumor rep1 breast tumor        yes
+3     DPM1 CA.102548 0.00 tumor rep1 breast tumor        yes
+4    SCYL3 CA.102548 5.78 tumor rep1 breast tumor        yes
+5 C1orf112 CA.102548 2.83 tumor rep1 breast tumor        yes
+6      FGR CA.102548 4.80 tumor rep1 breast tumor        yes
+
+
+#basic format for ggplot
+#ggplot(data, aes(x = variable_1, y = variable_2)) +
+ # geom_col()
+
+
+Nosotros queremos ver la regulación de la expresión de nuestro gen de interés a través de todas las muestras y queremos información para visualizarlas en un bar_plot
+Por lo que vamos a utilizar las columnas de las samples y lade FPKM que se corresponde con la expresión de los genes de cada muestra, 
+Entonces, empezaremos por filtrar por el gen, queremos sólo el gen BRCA1
+
+> data.long %>% 
++   filter(gene == 'BRCA1') %>% 
++   head()
+   gene    samples  FPKM      title       tissue metastasis
+1 BRCA1  CA.102548 30.37 tumor rep1 breast tumor        yes
+2 BRCA1  CA.104338 24.43 tumor rep2 breast tumor        yes
+3 BRCA1  CA.105094 43.58 tumor rep3 breast tumor        yes
+4 BRCA1  CA.109745 11.05 tumor rep4 breast tumor         no
+5 BRCA1 CA.1906415  3.38 tumor rep5 breast tumor         no
+6 BRCA1 CA.1912627  5.96 tumor rep6 breast tumor        yes
+
+
+
+# 1. barplot
+data %>%
+  filter(gene == 'BRCA1') %>%
+  ggplot(., aes(x = samples, y = FPKM, fill = tissue)) +
+  geom_col()
+
+
+Quiero que mi eje X sean todas las muestras y mi eje "Y" todas las FPKM xq quiero comparar la expresión de todas las muestras para el gen BRCA.
+
+
+Con el gráfico podemos ver en cuáles muestras hay mayor o menor expresión del gen pero no podemos saber cuál muestra se corresponde con tejido normal y cuál con tejido canceroso.
+
+data.long %>% 
+  filter(gene == 'BRCA1') %>% 
+  ggplot(., aes(x = samples, y = FPKM, fill = tissue)) +
+  geom_col()
+
+
+Para eso agregamos el fill para poder categorizar por color a las  muestras correspondientesa tejido normal y tejido canceroso.
+
+ 
+
+
+# 2. density
+dat.long %>%
+  filter(gene == 'BRCA1') %>%
+  ggplot(., aes(x = FPKM, fill = tissue)) +
+  geom_density(alpha = 0.3)
+
+alpha = 0 es completamente transparente
+Alpha = 1 es completamente opaco
+
+Ahora vamos a comparar cómo es la distribución de la expresión comparando tumor tissues vs normal tissues para BRCA_1 así que para esto vamos a crear un density plot.
+
+Como quiero comparar la expresión, voy a usar en el eje X el FPKM.
+Para hacer la comparación de la distribución de expresión vamos a usar el fill = tissue porque quiero comparar la distribución de la expresión para BRCA1 comaprando la tumor tissue con la normal tissue
+
+
+
+
+# 3. boxplot 
+dat.long %>%
+  filter(gene == 'BRCA1') %>%
+  ggplot(., aes(x = metastasis, y = FPKM)) +
+  #geom_boxplot()
+  geom_violin()   
+
+
+Comparar la expresión entre muestras teniendo metástasis o no. 
+Eje x = tenemos el grupo de metástasis como  SI o NO
+Eje y = tenemos el nivel de expresión
+
+Comparamos las muestras que no tienen metástasis con las muestras que sí presentan metástasis
+Vemos que no se observan diferencias significativas estadísticas pero a simple vista xq para ver bien esto necesito aplicar tests estadísticos.
+
+
+
+# 4. scatterplot
+dat.long %>%
+  filter(gene == 'BRCA1' | gene == 'BRCA2') %>%
+  spread(key = gene, value = FPKM) %>%
+  ggplot(., aes(x = BRCA1, y = BRCA2, color = tissue)) +
+  geom_point() +
+  geom_smooth(method = 'lm', se = FALSE)
+
+
+Comparar la expresión entre 2 genes, BRCA_1 y BRCA_2
+Para plotear la expresión de cada uno de los genes, en uno de los ejes pondremos BRCA_1 y en el otro BRCA_2
+
+#Así lo tenemos modo long format
+   gene    samples  FPKM      title       tissue metastasis
+1 BRCA1  CA.102548 30.37 tumor rep1 breast tumor        yes
+2 BRCA1  CA.104338 24.43 tumor rep2 breast tumor        yes
+3 BRCA1  CA.105094 43.58 tumor rep3 breast tumor        yes
+4 BRCA1  CA.109745 11.05 tumor rep4 breast tumor         no
+5 BRCA1 CA.1906415  3.38 tumor rep5 breast tumor         no
+6 BRCA1 CA.1912627  5.96 tumor rep6 breast tumor        yes
+
+
+Lo tengo en la loong format así que lo voy a convertir en la wide format y obtenemos:
+
+> data.long %>%
++   filter(gene == 'BRCA1' | gene == 'BRCA2') %>%
++   spread(key = gene, value = FPKM)
+       samples        title               tissue metastasis BRCA1 BRCA2
+1    CA.102548   tumor rep1         breast tumor        yes 30.37  0.38
+2    CA.104338   tumor rep2         breast tumor        yes 24.43  0.23
+3    CA.105094   tumor rep3         breast tumor        yes 43.58  0.00
+4    CA.109745   tumor rep4         breast tumor         no 11.05  1.31
+5   CA.1906415   tumor rep5         breast tumor         no  3.38  0.53
+6   CA.1912627   tumor rep6         breast tumor        yes  5.96  3.37
+7   CA.1924346   tumor rep7         breast tumor         no  4.26  1.21
+8   CA.1926760   tumor rep8         breast tumor         no 11.52  4.39
+9   CA.1927842   tumor rep9         breast tumor        yes  9.87  3.91
+10  CA.1933414  tumor rep10         breast tumor         no  3.47  3.51
+
+
+Las expresiones para BRCA1 y BRCA2
+
+EJE X = BRCA1
+EJE Y = BRCA2
+
+ploteamos los valores de expresión 30.37  0.38
+
+
+
+# 5. heatmap
+genes.of.interest <- c('BRCA1', 'BRCA2', 'TP53', 'ALK', 'MYCN')
+
+heatmap nos sirve para visualizar la expresión de múltiples genes a través de todas las muestras y comparar la expresión de estos genes.
+
+data.long %>%
+  filter(gene %in% genes.of.interest) %>%
+  ggplot(., aes(x = samples, y = gene, fill = FPKM)) +
+  geom_tile()
+
+
+
+.Para ver mejor la expresión de estos genes usamos el scale_fill_gradient().. y si quiero ver cómo se expresan en tejido tumoral y tejido normal uso el factet_wrap()
+
+data.long %>%
+  filter(gene %in% genes.of.interest) %>%
+  ggplot(., aes(x = samples, y = gene, fill = FPKM)) +
+  geom_tile() +
+  scale_fill_gradient(low = 'white', high = 'red') +
+  facet_wrap(~ tissue)
+
+
+
+
+Para categorizar por tejido normal y tumoral en este gráfico, necesitas asegurarte de que los datos en `data.long` incluyan una columna que identifique el tipo de tejido (por ejemplo, `tissue_type` con valores como "normal" y "tumoral"). Luego, puedes modificar el código de `ggplot` para añadir `facet_wrap` o `facet_grid`, que permitirá dividir el gráfico según el tipo de tejido. Aquí tienes cómo hacerlo:
+
+```R
+data.long %>%
+  filter(gene %in% genes.of.interest) %>%
+  ggplot(aes(x = samples, y = gene, fill = FPKM)) +
+  geom_tile() +
+  scale_fill_gradient(low = 'white', high = 'red') +
+  facet_wrap(~ tissue_type)
+```
+
+### Explicación
+
+- **`facet_wrap(~ tissue_type)`**: Esto divide el gráfico en subgráficos basados en los valores de la columna `tissue_type`. En cada panel, verás los datos filtrados por los valores de `tissue_type`, es decir, un panel para tejido normal y otro para tejido tumoral.
+
+Si prefieres que los gráficos estén en una estructura de cuadrícula, puedes usar `facet_grid`, por ejemplo:
+
+```R
+facet_grid(. ~ tissue_type)
+```
+
+Esto ubicará los gráficos en columnas separadas, una para "normal" y otra para "tumoral". 
+
+Recuerda que para que esto funcione, es necesario que la columna `tissue_type` exista en `data.long` y tenga los valores correspondientes para cada muestra.
+
+
+

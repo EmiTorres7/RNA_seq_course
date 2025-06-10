@@ -1,0 +1,129 @@
+			How to download sequencing data from SRA NCBI | Bioinformatics 101
+
+https://www.youtube.com/watch?v=zE851fWCYQg&list=PLJefJsd1yfhbIhblS-85alaFsPdU00DaA&index=4
+
+
+
+1) SRA and its entities
+
+2) Download and configure SRA Toolkit
+
+3) Download sequencing reads (.fastq files)
+
+
+
+
+1) SRA and its entities
+
+SRA record have a lot of information with different entities containing diverse information.
+
+. We can find information about the Project when we have the description of the research Project. STUDY (accession SRP) STUDY (SRP)
+
+. We also can get information about the samples, las describe y también nos da información sobre de qué organismos vienen (SAMPLE accession SRS)
+
+. We can also find information about the experiment, about the sequencer and details about the library preparation (EXPERIMENT, accession SRX)
+
+. Last, we have RUN (SRR). Está asociado con los raw files, sequences files [.bam, .fastq, .h5,fasta]
+
+
+--- We are going to retrieving the sequencingdata using the SRR id, how to get the SRR id associated with the simples that we insterested to get the raw data off
+
+
+NCBI GEO DataSet: GSE183947
+
+
+Supplementary file	Size	Download	File type/resource
+GSE183947_fpkm.csv.gz	2.3 Mb	(ftp)(http)	CSV
+SRA Run Selector
+
+Raw data are available in SRA
+Processed data are available on Series record
+
+Click en SRA xq quiero recuperar los datos de la secuencia, no los datos de expresión de genes.
+
+
+
+1). SRA Run Selector: con esto obtengo los datos de la secuencia
+
+
+2). Con esto obtengo los datos de la expresión de genes
+
+Supplementary file	Size	Download	File type/resource
+GSE183947_fpkm.csv.gz	2.3 Mb	(ftp)(http)	CSV
+
+http para descargar la bdd de GSE183947 en formato csv.
+Si viene como .gz tengo que descompirmirlo.
+
+
+#----------- Cuando hacemos click en SRA Run Selector -----------#
+Podemos ver que tiene todo tipo de información acerca del proyecto, nos da información acerca de la corrida (Runs), Bytes, Bases y la opcióon de descargarlas
+
+BioProject	PRJNA762469
+Consent	public
+Assay Type	RNA-Seq
+AvgSpotLen	300
+Center Name	GEO
+DATASTORE filetype	fastq, run.zq, sra
+DATASTORE provider	gs, ncbi, s3
+DATASTORE region	gs.us-east1, ncbi.public, s3.us-east-1
+Instrument	Illumina HiSeq 2000
+LibraryLayout	PAIRED
+LibrarySelection	cDNA
+LibrarySource	TRANSCRIPTOMIC
+Organism	Homo sapiens
+Platform	ILLUMINA
+ReleaseDate	2021-09-16
+version	1
+source_name	breast
+SRA Study	SRP336638
+
+
+Al final podemos ver una tabla
+
+    Run      BioSample   Bases    Bytes    Donor  Experiment   GEO_Accession metástasis Sample Name   tissue
+
+SRR15852393 SAMN21395376 9.44 G 3.03  Gb   102548 SRX12143676 GSM5574685        yes     GSM5574685  breast tumor
+SRR15852394 SAMN21395377 6.44 G 2.02  Gb   104338 SRX12143617 GSM5574686        yes     GSM5574686  breast tumor
+
+
+Tiene el SRR id asociado con las muestras, contiene información acerca de las muestras, donors, el id asociado al experimento (SRX)
+
+Acá tenemos 60 corridas porque recordar que tenemos 30 muestras normales y 30  tumor simples.
+Each sample is correspond to one run. Technically each run willhave sequencing daddta associated with that sample.
+So, if you want to download sequencing data associated with all the samples, you can click at the accession list button
+
+	Runs	Bytes	Bases	Download	
+Total	60	145.01 Gb	473.16 G
+
+Seleccionamos en Accession List	
+Obtenemos esto:
+
+SRR15852394
+SRR15852400
+SRR15852408
+
+---------------------------------------------------------------------------------------------------------------
+Vamos a usar esos SRR IDs to fetch the sequencing data that's associatedwith this id and that corresponds to a sample in your cohort.
+
+-Para hacer esto vamos a requerir SRA toolkit in order to use these SRR IDds to get the data.
+
+-Con esta herramienta puedo descargar las secuencias asociadas a cada SRR15852394 (id asociado con las muestra)
+
+-Se descargan las sequencing reads associated with the SRR id
+
+spots read: 18.732.684
+reads read: 37.465.368
+reads written: 37.465.368
+
+También se generaron 2 archivos que son files .fastq, hay 2 archivos porque son paired end reads, 2 files containing sequencing reads associated with this SRR id.
+
+SRR15852399_1.fastq
+SRR15852399_2.fastq
+
+----------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+

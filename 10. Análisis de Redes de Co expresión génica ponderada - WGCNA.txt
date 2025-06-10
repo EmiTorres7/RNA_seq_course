@@ -1,0 +1,152 @@
+	                 INTRODUCTION TO WEIGHTED GENE CO-EXPRESSION NETWORK ANALYSIS 	
+					         (WGCNA)
+
+
+###  Análisis de Redes de Co-expresión Genética Ponderada ###
+
+Es un enfoque de biología de sistemas que permite analizar patrones complejos en grandes conjuntos de datos.
+
+WGCNA crea una red donde los genes están conectados basándose en su co-expresión, es decir, en qué medida sus niveles de expresión están correlacionados.
+
+Esta red luego se usa para identificar grupos de genes que se co expresan fuertemente llamados "módulos" y para asociar estos con rasgos de las muestras analizadas.
+
+
+Co-expresión: 
+Tendencia de que los niveles de expresión de diferentes genes cambien de forma similar en diferentes condiciones o muestras.
+
+Redes:
+EN WGCNA, los genes se representan como nodos en una red y los enlaces entre ellos indican la fuerza de su correlación de expresión.
+
+Módulos:
+Son grupos de genes que están altamente co-relacionados y por lo tanto, pueden estar involucrados en procesos biológicos similares.
+
+
+WGCNA es un poderoso método de análisis que permite comprender las relaciones de todo el transcriptoma de todos los genes en un sistema en lugar de cada ge de forma aislada.
+
+
+
+Digamos que existe una droga experimental which being tested for a certain type of cancer and, it has been found that cells from tumors exracted from patients having that particular type of cancer don't respond to the drug therapy which means th drug do not effectively kill the cancer cellsand, because the cancer cells are not eradicarted, the tumor comes back.
+
+Así que esencialmente, en lo que estamos interesados, es en observar los cambios a nivel sistémico, o sea en los cambios que están ocurriendo en la célula que contribuyen a la resistencia a la terapia
+
+Nos interesaría entender qué vías estarían involucradas; para de identificar las vías, esencialmente querríamos ir a un nivel más profundo e identificar los genes que están involucrados en las vías que causan la resistencia a la droga.
+
+Para estudiar los cambios en una célula en respuesta a una terapia, existen varios niveles a los que uno puede estudiar la respuesta sistémica:
+
+-at the genomics level
+-at the transcriptomics level
+-at the proteomics level 
+
+
+# Hablando de la respuesta transcriptómica, existen varios métodos usados para cuantificar la respuesta transcriptómica en una célula:
+
+1. qRT-PCR
+2. Microarray
+3. RNA-seq
+
+So, basically they measure the gene expression in a cell and what we get is a gene expression matrix.
+Using this gene expression matrix we can employ various computational methods to understand or identify biomarkers or candidat genes or a list of genes that could give us an idea on what pathways must be involved and that must be cotributing resistance to the cell.
+
+
+### IMPORTANTE!! ###
+
+Métodos tales como Differential Gene Expression Analysis and Function Enrichment Analysis can not reveal connections between the genes
+
+Sólo nos pueden dar una idea de qué genes están expresados o enriquecidos en un grupo de células o en una condición vs otra, pero no nos dan información sobre cómo estos genes se conectan entre ellos.
+
+Por eso el análisis de Redes de co-expresión es un método que nos da más información sobre cómo los genes están correlacionados entre ellos y esto nos da una idea de cuáles genes deben estar funcionalmente relacionados.
+
+
+
+#- Basic premise of WGCNA -#
+The basic idea behind of the weighted gene coexpression  network analysis is that genes with similar expressions patterns are funcionally associated.
+
+1.
+Cuando decimos genes con similares patrones de expresión nos referimos a que esos genes están correlacionados, de manera que si la expresión de uno de esos genes aumenta, la expresión del otro gen con el que está correlacionado también aumentará su expresión.
+
+When the expression of one gene goes down, the expression o the other gene goes down as well. 
+That means that they have similar expression patern
+
+2.
+They are functionally associated, when these genes have similar expression patterns, it means they are funcionally associated meaning that they are part of the same complex or they are involved in thee same pathway or regulatory mechanism or they may influece each other or maybe they are influenced by the same underlying mechanism.
+
+
+
+Terminologies of Coexpression Network
+
+Node 
+Cada gen está repreenado por un Node y estos están conectados entre sí por Edges.
+
+Edge
+Sería cuán correlacionado está ese gen con otro.
+
+Modules = Clústeres
+Cuando tenemos genes con perfiles de expresión similares forman una network que está altamente conectada constituyendo un grupo de genes mucho más correlacionado entre ellos que otro conjunto, forman una network que está altmanete conectada.
+
+Hub gene
+Genes que están altamente conectados a otros genes en un módulo o clúster, es como el gen central o el más conectado a los demás genes dentro e un clúster de genes correlacionados.
+
+Module eigengene
+Perfil de expresión representativa de los genes en un módulo.
+
+
+
+### WGCNA Approach
+
+This approach can be applied to **MicroArray or **RNA-seq data, both of these methods are used to measure gene expression, so essentially what we have is a gene expression matrix where:
+
+> 	  Sample 1   Sample 2
+
+> Gene1    2.33	      4.27
+ 
+> Gene2    10.15      50.10
+	   
+
+Row: Genes or probiotics
+Columns: Samples
+Values: intensity values (**MicroArray data) or quantifications (**RNA-seq data)
+
+The goal is to find genes that are co-expressed, as we previously discuss, gene co-expressed are functionally related, so finding co-express genes can give us more information or clues on underlying mechanism and pathways that can be used to study the response to external stimulus.
+
+We can use this gene expression matrix to perform a correlations between genes and, gene correlations can be performed between all the genes so, essentially we end up with a matrix with correlation values and correlations between all the genes.
+
+>      G1    G2    G3
+
+  G1   1    0.1   0.9
+
+  G2  0.1    1    0.33
+
+  G3  0.9   0.33   1
+
+
+This matrix can ultimately be used and additional steps are performed on this matrix and, this algorithm uses a clustering approach to cluster these genes and, what we can do is identify modules of co-express genes.
+
+We can extract certain clusters of genes that are co-expressed and, once you have identified and extracted these clusters (we call these cluster as modules) can also use perform like further analysis using these clusters.
+
+1.Uno puede correlacionar clústers similares o módulos
+2.Identificar redes regulatorias usando los genes que son parte del clúster
+3.Perform enrichment analysis
+4.Correlate these modules to external traits or phenotypes
+5.Identify driver genes or genes that are highly connected to the other genes in that cluster or module
+
+
+
+#### Good practices
+
+- More simples, more robust and refined results (at least 20 samples)
+
+- WGCNA is designed to be unsupervised method that clusters genes based on their expression profilesso, filtering genes by differential expression Will violate a major assumption and hence you should not filter the genes by differential expression.
+DO NOT filter genes by differential expression.
+
+** For RNA-Seq **
+. all the genes that have consistently low counts are removed
+. the data that is provided should be normalized data, any normalización method can be used (ya sea variance-stabilizing trasnsformation or log(RPKM/FPKM + 1))
+. If there are any batch effects present in the data then they should have to be adjusted for before running this analysis.
+
+
+
+
+
+
+
+

@@ -1,0 +1,256 @@
+						fastq (reads) to counts
+		Setup RNA-Seq Pipeline from scratch: fastq (reads) to counts | Step-by-Step Tutorial
+
+RNA-Seq (bulk) workflow pipeline in bash: From fastqs (reads) to count matrix.
+
+
+https://www.youtube.com/watch?v=lG11JjovJHE&list=PLJefJsd1yfhbIhblS-85alaFsPdU00DaA&index=12
+
+Fastq reads  --->  count matrix
+
+We will start with fastq reads and process these reads to ultimately get the count matrix.
+Pipeline to quantify our reads so we can get a count matrix so that count matrix can be used for further analysis.
+
+
+RNAseq data can be used for various applications and based on the oranism studied and the research goal, it can adopt different analysis strategies.
+
+Por ejemplo si un genoma está disponible para un organismo, luego puedo identificar transcriptos al mapear estas secuencias de RNA en el genoma.
+
+También podemos usar RNAseq data para identificar expresión alélica específica e identificar enfermedades asocaciadas a polimorfismos de nucleótido simple (SNP) y fusiones de genes las cuales pueden ser enfermedades causando varianzas en ciertas enfermedades como el cáncer.
+
+
+The analysis strategy and tools can be selected and, the pipeline can be designed to answer the research questions.
+
+
+				DETAILED WORKFLOW STEPS - BULK RNA-Seq
+
+1). Ilumnina Sequencer -> Quality Control
+
+Perform the Quality Control of reads from sequencer which ar in fastq files.
+To perform this we use tools like FastQC, FastQScreen
+The goal is to remove bases from the reads that are poor qualitym, also remove any adapter sequences present.
+
+Trimming:
+In order to remove these sequences, w e need a trimming tool, the tool commonly used are Cutadapt and Trimmomatic.
+
+Quality Control:
+Once we gave trimmed the reads, you would again perform a Quality Control to ensure your reads are of good quality and all the poor quality bases or adapter sequences have been removed.
+
+
+2) MAPPING
+Once we have the good quality, we proceed to mapping.
+The reads can either be mapped to a genoma or can be mapped to a transcriptome.
+
+-to genome:
+When trying to map the reads to a genoma, we should used spliced-aware aligners (alineadores que reconocen empalmes) (STAR, HISAT2)
+
+To give you an idea on what splice aware means: 
+como sabemos RNA-seq reads derivan a partir de ARNm maduro, este contiene secuenciasde exones, no tiene intrones. So, if you try to align these RNA sequences to the reference sequence using an aligner which is not spliced away, then it would essentially try to map  these RNA sequence to reference sequence containing introns, since these introns are not present in your RNA sequence,  your reads will not align to the reference sequence, so hence you need an aligner which would not to try to align the RNA reads to the introns.
+But somehow identify the downstream exons and only align the ARN sequence to the exons and ignore the introns.
+
+
+-to transcriptome:
+we can use a splice unaware aligner or quasi-mappers.
+The output from these quasimappers are counts.
+The output from the aligners (spliced aware or splice underwear aligners) are BAM files.
+
+(VER ESQUEMA)
+
+
+3) QUANTIFICATION
+Con uno obtengo archivos BAM y estos los tengo que Cuantificar para obtener las COUNTS, en cambio con el quasi-mappers obtengo directamente las COUNTS.
+
+Con los BAM files proceso a la quantification usando featureCount por jemplo. y así obtengolas counts
+Con los quasimappers directamente obtengo las counts.
+
+BAM files necesitan ser procesados y cuantificados para generar las counts, las herramientas como FeatureCount son usadas para cuantificar reads a partir de estos BAM files, puede ser at the transcript level and the exón levels.
+
+Once the quantificatioon is completed we get counts and these can be used for the downstream analysis which is Differential Expression Analysis. 
+
+
+
+4) DIFFERENTIAL EXPRESSION
+Una vez que tengo las counts puedo hacer Expresión Diferencial de genes (DESeq2, edgeR… paquetes de R) para comparar por ejemplo entre 2 condiciones biológicas distintas para identificar diferentes patrones de exoresón de los genes para cada condición (treated vs untreated), veremos los niveles de expresión de los genes dependiendo de la condición biológica, si se expresan más o menos en una muestra tratada vs una no tratada
+
+Al final observamos un Gráfico de FoldChnage donde veremos los  genes diferencialmente expresados significativamente, tanto regulados positivamente up regulados en la condición tratada y los down regulados en la condición tratada.
+
+
+5) FUNTIONAL ANALYSIS
+Suele usarse Gene Ontology.
+
+--------------------------------
+HISAT2 (aligner) ---> to align
+featureCounts ---> to quantify
+
+La elección del aligner depende de la precisión que a su vez depende del objetivo del análisis y de lo que estás apuntando a lograr con tu RNA-seq analysis
+
+
+######----Quality Control FastQC----#####
+The first step to process RNA sequence is to perform Quality Control
+Para llevar a cabo esto usamos la herramienta FastQC
+
+# STEP 1: Run fastqc  
+fastqc data/demo.fastq -o data/
+#FastQC: Verificar calidad de las lecturas
+system("fastqc data/demo.fastq -o data/")
+
+We Will run this first step and we can take a look at the quality of the reads and decide whether we need o trim it or not.
+
+If the  bases would have poor qualities having scores les than 20, then we would essentially want to trim out those reads.
+
+In general, it is observed that the quality for the reads from most platform Will drop towards the end, this is often due to a signal decay or phasing during the end of sequencing run.
+
+Si tenemos que remover las reads del final de la secuenciación debido a baja calidad, se recomienda mantener un 80% de la longitud de la read, don't remove too many reads which would make the reads too short.
+
+Otra de las cosas a considerar es el Adapter Content, if there are any adapter sequences then these have to be trimmed out.
+
+
+####--- Trimmomatic: Recortar secuencias de baja calidad ---###
+####--- Verificar calidad del archivo recortado ---####
+system("fastqc data/demo_trimmed.fastq -o data/")
+
+### HISAT2: Alineamiento ###
+Una vez que hemos recortado las reads que tienen baja calidad, procedemos a hacer el alineamiento de estas reads al genoma de referencia.
+
+Obtenemos un BAM file
+
+
+####--- STEP 3: Run featureCounts - Quantification ---####
+
+featureCounts: Cuantificación
+Una vez que tenemos el alineamiento y obtenemos el BAM file, lo usamos para realizar la cuantificación
+
+En un BAM file we have a genomic location for each read that is aligned, featureCounts basically matches this genomic location of the read that is aligned to the genoma annotation file which provides a genoma location of gen. 
+So, basically featureCount can tell whether the read is mapped to a gene
+
+
+Se puede obtener el genoma de referencia con RStudio o también en Ensembl
+# get gtf
+# wget http://ftp.ensembl.org/pub/release-106/gtf/homo_sapiens/Homo_sapiens.GRCh38.106.gtf.gz
+featureCounts -S 2 -a ../hg38/Homo_sapiens.GRCh38.106.gtf -o quants/demo_featurecounts.txt 
+
+> head(counts_data)
+                
+ENSG00000000003        679 
+ENSG00000000005          0         
+ENSG00000000419        467        
+ENSG00000000457        260       
+ENSG00000000460         60        
+ENSG00000000938          0          
+
+Gen ids
+these counts are raw counts, and these can be eventually used to genereate a count matrix which can be used to perform Differential expression analysis
+
+---------------------------------------------------------------------------------------------------------------
+Script_pipeline.sh
+
+#!/bin/bash
+
+SECONDS=0
+
+# change working directory
+cd /Users/kr/Desktop/demo/RNASeq_pipeline/
+
+
+# STEP 1: Run fastqc
+fastqc data/demo.fastq -o data/
+
+# run trimmomatic to trim reads with poor quality
+java -jar ~/Desktop/demo/tools/Trimmomatic-0.39/trimmomatic-0.39.jar SE -threads 4 data/demo.fastq data/demo_trimmed.fastq TRAILING:10 -phred33
+echo "Trimmomatic finished running!"
+
+fastqc data/demo_trimmed.fastq -o data/
+
+
+# STEP 2: Run HISAT2
+# mkdir HISAT2
+# get the genome indices
+# wget https://genome-idx.s3.amazonaws.com/hisat/grch38_genome.tar.gz
+
+
+# run alignment
+hisat2 -q --rna-strandness R -x HISAT2/grch38/genome -U data/demo_trimmed.fastq | samtools sort -o HISAT2/demo_trimmed.bam
+echo "HISAT2 finished running!"
+
+# STEP 3: Run featureCounts - Quantification
+# featureCounts: Cuantificación
+
+
+
+# get gtf
+# wget http://ftp.ensembl.org/pub/release-106/gtf/homo_sapiens/Homo_sapiens.GRCh38.106.gtf.gz
+featureCounts -S 2 -a ../hg38/Homo_sapiens.GRCh38.106.gtf -o quants/demo_featurecounts.txt HISAT2/demo_trimmed.bam
+echo "featureCounts finished running!"
+
+
+duration=$SECONDS
+echo "$(($duration / 60)) minutes and $(($duration % 60)) seconds elapsed."
+
+						####	####
+
+---
+Aquí está el script convertido a **código R**, utilizando paquetes de R para realizar tareas equivalentes a las del script en bash. El código usa herramientas como `system()` para ejecutar comandos externos cuando no hay una alternativa directa en R.
+
+```R
+# Configuración inicial
+start_time <- Sys.time()
+
+# Cambiar directorio de trabajo
+setwd("/Users/kr/Desktop/demo/RNASeq_pipeline/")
+
+# Instalar y cargar paquetes necesarios
+if (!requireNamespace("BiocManager", quietly = TRUE)) {
+  install.packages("BiocManager")
+}
+BiocManager::install(c("Rsubread"))
+
+# FastQC: Verificar calidad de las lecturas
+system("fastqc data/demo.fastq -o data/")
+
+# Trimmomatic: Recortar secuencias de baja calidad
+trimmomatic_path <- "~/Desktop/demo/tools/Trimmomatic-0.39/trimmomatic-0.39.jar"
+input_fastq <- "data/demo.fastq"
+output_fastq <- "data/demo_trimmed.fastq"
+system(paste("java -jar", trimmomatic_path, "SE -threads 4", input_fastq, output_fastq, "TRAILING:10 -phred33"))
+cat("Trimmomatic finished running!\n")
+
+# Verificar calidad del archivo recortado
+system("fastqc data/demo_trimmed.fastq -o data/")
+
+# HISAT2: Alineamiento
+hisat2_index <- "HISAT2/grch38/genome"
+trimmed_fastq <- "data/demo_trimmed.fastq"
+output_bam <- "HISAT2/demo_trimmed.bam"
+system(paste("hisat2 -q --rna-strandness R -x", hisat2_index, "-U", trimmed_fastq, "| samtools sort -o", output_bam))
+cat("HISAT2 finished running!\n")
+
+# featureCounts: Cuantificación
+gtf_file <- "../hg38/Homo_sapiens.GRCh38.106.gtf"
+output_counts <- "quants/demo_featurecounts.txt"
+library(Rsubread)
+featureCounts(files = output_bam, annot.ext = gtf_file, isGTFAnnotationFile = TRUE, strandSpecific = 2, 
+              out = output_counts)
+cat("featureCounts finished running!\n")
+
+# Mostrar el tiempo transcurrido
+end_time <- Sys.time()
+duration <- difftime(end_time, start_time, units = "secs")
+cat(sprintf("%d minutes and %d seconds elapsed.\n", as.integer(duration) %/% 60, as.integer(duration) %% 60))
+```
+
+---
+
+### **Notas importantes:**
+1. **R y herramientas externas:**
+   - Algunas tareas (como `fastqc`, `trimmomatic`, `hisat2`) no tienen paquetes equivalentes en R. Por lo tanto, se usan `system()` para invocar los comandos directamente desde R.
+   - Asegúrate de que las herramientas como `fastqc`, `hisat2`, `samtools`, y `trimmomatic` estén instaladas y configuradas correctamente en tu sistema.
+
+2. **Paquete Rsubread para featureCounts:**
+   - En lugar de ejecutar `featureCounts` directamente, este script utiliza el paquete `Rsubread`, que implementa la funcionalidad de `featureCounts` en R.
+
+3. **Ajuste de rutas:**
+   - Cambia las rutas a las herramientas, índices de alineación, archivos GTF y FASTQ según la estructura de tu sistema de archivos.
+
+4. **Dependencias adicionales:**
+   - Asegúrate de que las dependencias necesarias (por ejemplo, Java para Trimmomatic) estén instaladas.
+

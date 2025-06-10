@@ -1,0 +1,152 @@
+					   8. -- Sequencing Depth --
+
+https://www.youtube.com/watch?v=1jxDv6qVmLQ&list=PLJefJsd1yfhbIhblS-85alaFsPdU00DaA&index=13
+
+
+Para hablar de sequencing Depth, I want to talk first about COVERAGE.
+
+Coverage 
+Is a measure of redundancy. So, it is the average number of reads that align or cover a known reference at a particular location.
+Average number of reads at a particular location.
+
+Depth of coverage also have other names which is sequencing Depth or read Depth or just depht.
+When they say depth of coverage, they usually mean the average number of reads at a particular location
+
+Breadth of coverage:
+percentage of the target basis that is covered by the reads compared to the reference sequence.
+Es decir, de todas las bases en la secuencia de referencia, cuántas bases are covered by the reads.
+
+
+			  ----------------------
+			 ---------------------
+			-------------------	
+			-------------------			---------------------
+			  ------------------				-----------------
+	---------	 --------------------			   --------------------
+	--------	  --------------------
+ ----------------------------------------------------------------------------------------------------- REFERENCE 													GENOME
+
+Ya que la secuenciación es propensa a errores, higher coverage is used to increase the confidence in the basis call. 
+So, if each nucleotide is sequenced multiple times, the base calls shared by the majoirty of the reads Will relfect the correct nucleotide.
+Si cada nucleótido se secuencia varias veces, las llamadas de bases compartidas por la mayoría de las lecturas reflejarán el nucleótido correcto.
+
+So, sequencing more reads increase the power, so, sequencing more reads Will add more confidence to the base call and also improves the chances of covering red events.
+
+Como se puede notar, the Depth of coverage is not alwas uniform. There are certain areas in a reference  sequence that have higher coverage compared to the other.
+So, when we talk about a coverage value is usually an average value.
+
+Example: 
+If we say a genoma has a 10x coverage, we mean that each base has been sequenced 10 times on average.
+
+
+Coverage can be calculated:
+- for the whole genoma, 
+- for one locus or,
+- one nucleotide position
+So, the genoma basis we usually talk about the coverage 10x, 20x or 100x in terms of how many times a base has been sequenced on average.
+But, if you are talking about one specific nucleotide, then that represents the number of reads is overlapping that position.
+
+Si quieres calcular el coverage tenemos esta ecuación:
+
+	Lander/Waterman equation:  C = L*N/G
+
+C: coverage
+L: Lenght of reads
+N: number of reads
+G: Haploid genoma lenght
+
+Calcula la cobertura usando la longitud de las reads, el número de las reads y la longitud del genoma
+
+Ejemplo:
+We have a genoma of length 20 nucleotides and we have 5 reads and each read have a lenght of 8 nucleotides
+
+whole genoma => G = 20
+number of reads => N = 5
+length of read => L = 8
+
+C = L*N / G
+  = 8*5 / 20
+C = 2x
+
+We have a coverage of 2x, which is each base has been sequencing at least twice on average.
+
+
+Pero si calculamos el coverage for one Locus or one región, then we can still use this equation where if we can use the length of the región that is 10 nucleotides (10nt). So, here the coverage for that 10nt locus is 4X.
+
+G=10
+
+C = L*N/G
+  = 8*5/10
+C = 4X
+
+
+Y si calculamos el coverage for one nucleotide position,  then we can simpl calculate the number of reads that is overlapping that position.
+Aquí vemos que la posición de interés tiene un coverage of 5X.
+
+G=1
+
+C = L*N/G
+  = 1*5/1
+C = 5X
+
+			     RECOMMENDED SEQUENCE COVERAGE FOR SEQUENCING APPLICATIONS
+
+Coverage will vary depending on the type of the Next Generation Sequencing data and the research application.
+
+Por lo general, more coverage is used when one is trying to identify a variant that is less common, one exampleof that is the detection of cancer mutations in tumor circulating DNA in the plasma of cancer patients
+
+The coverage also varies depending on the Next Generation Sequencing type of data, que es si el tipo de dato es un whole genoma sequencing, whether it's an exome sequencing data, whether it is chip sequencing or RNA sequencing.
+
+For RNA sequencing, the number of reads required depends on the genome size, del número de genes conocidos y transcriptos, así que se recomienda tener:
+- entre 5 a 10 millones de reads por muestra para small genomes like bacteria.
+- 20 a 30 millones de reads ppor muestra para large genomes like human or Mouse.
+
+
+	     Sequencing applications				Recommended Cverage
+
+	   Whole genoma sequencing (WGS)                            15x to 60x
+	   Whole exome sequencing (WES)				      100x
+	   RNA sequencing (RNA-seq)			5 to 100 M  reads per sample depending on target study
+	   ChIP-Seq						      100x
+	   
+
+
+			     VISUALIZING COVERAGE OF ALIGNED READS IN IGV
+
+Se pueden ver algunas reads que están alineadas a una parte del genoma en el IGV (Integrated Genomics Viewer)
+Cada segmento aquí es esencialmente una read y la dirección de la read nos dice la manera que la read está alineada al genoma.
+El coverage puede ser visualizado en rosa (en el video, minuto 6), podemos ver que hay ciertas regiones que tienen un coverage más alto comparado con otras regiones.
+Así que básicamente puedes usar IGV para visualizar tus reads alineadas y el coverage.
+
+
+
+				    Calculate coverage and coverage metrics
+
+Además de visualizar tus reads y el coverage en IGV, también se puede calcular el coverage y generar coverage metrics usando tus BAM files.
+
+Hay varias herramientas disponibles que pueden calcular el coverage y generar el coverage metrics:
+
+1). Sam tools coverage: 
+Genera un histograma o una tabla de coverage per each cromosoma or for region of interest
+En adición a calcular el coverage, también te dice el porcentaje de las bases cubiertas, the mean base quality and mapping quality
+
+Requiere: 
+input: as a BAM file 
+output: el histograma with the coverage matrix.
+
+
+2). Sam tools Depth:
+In addition, there is another function which is Sam tools Depth la cual calcula el Depth at each position.
+
+Requires:
+input: BAM file
+output: at each position in a chromosome, the number of reads that are aligned at that position so, basically Will give you the Depth at each position in a BAM file.
+
+chromosome	position   number of read
+  chr1  	 159037          4
+  chr1  	 159038          3
+  chr1  	 159039          3
+
+
+
+

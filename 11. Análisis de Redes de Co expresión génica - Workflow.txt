@@ -1,0 +1,6 @@
+				  WEIGHTED GENE CO-EXPRESSION NETWORK ANALYSIS 
+				           (WGCNA)- Detailed Workflow	
+
+
+
+	

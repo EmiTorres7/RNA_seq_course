@@ -1,0 +1,172 @@
+	  	      Difference between RPKM/FPKM and TPM | RNA-Seq Normalization Methods | 
+	        			     Bioinformatics 101
+
+
+https://www.youtube.com/watch?v=S1PcT5rp8c4&list=PLJefJsd1yfhbIhblS-85alaFsPdU00DaA&index=5
+
+
+Antes de hablar de los diferentes métodos de normalización, una introducción al concepto de replicados
+
+Repeating an experiment or having replicates in your experiment is importance because it gives us confidence that the observed effect is due to the biological phenomena and it is not due to biological or technical variation. 
+
+
+#There are two types of replicates
+
+ . Technical Replicates
+These are repeated measurements from the same sample. This helps us to measure the random noise that is associated with the protocols or equipment
+
+ 
+ . Biological Replicates
+These are parallel measurements from biologically distinct simples. 
+For example, after repeating an assay in distinct or independently generated samples.
+These replicates account for the biological variation like enviroment fluctuation or different in temperature or nutrient concentration or factors which are not under the control of the experimenter.
+
+
+
+Let's say we want to compare the expression of genes between the replicates, so talking a little bit about RNA sequencing steps is performed.
+
+a. RNAis extracted from the sample and is broken down into fragments
+b. These fragments are reverse transcribed to complementary DNAc (RT reaction) 
+c. The complementary DNA is fed into a sequencer which gives out sequencing reads.
+d. These reads are aligned back to a reference genome or transcriptome or even assemble without a reference.
+e. The number o reads that map to a gene gives us the quantification and gives us an idea of expression of that gene in the experiment
+
+We get essentially is a matrix, it is called accounts counts matrix.
+ROW: genes
+COLUMN: replicates or the samples
+VALUES: counts
+
+The count is the most fundamental unit to measure gene expression in an RNA sequencing experiment 
+
+
+Si queremos comparar la expresión de 2 genes en digamos replicados técnicos uno diría que por qué necesitar realizar una normalización de los datos actuales, por qué no sólo mirar el número de counts para ese gen en cada uno de los replicados y sólo compararlos e inferir que cuanto más alto sean los counts significa que mayor es la expresión, así que sólo bastaría con comparar las counts de ambos replicados..
+
+But you can't use counts data directly to compare expression because it does not account for a lot of biases (no tiene en cuenta muchos sesgos)
+
+So, let's talk about what biases we need to normalize and take into consideration when we are trying to compare expression of genes between the replicates
+
+
+					BIEASES
+
+	1) GENE LENGTH
+
+the first bias we Will need to account for.. is gene length..
+In the example Gene A is longer than Gene B which means that more numbers of fragments Will map to gene A compared to gene B
+
+And when you quantify these fragments mapping to the genes the number of counts for gene A will be higher than gene B.
+
+But just looking at the counts it would look like gene A is more expressed than Gene B which is not true because the length of these genes are different so we need to account for the bias when we are comparing gene expression between the replicates.
+
+
+
+	2) SEQUENCING DEPTH 
+
+In the example we can see that there are more number of fragments mapping to the genes on sample 1 compared to the number of fragments mapping to the genes on sample 2.
+
+When we quantify these fragments into counts, the counts for the genes on sample 1 are going to be higher than the counts for the genes on sample 2.
+
+Podríamos pensar sólo con esto, que los genes en la muestra 1 tienen mayor expresión (están más expresados) comparados con los genes de la muestra 2, pero esto no es así xq podemos ver que hay una diferencia debido a la profundidad de secuencia
+
+
+
+			       RPKM/FPKM and TPM
+
+Ahora que entendemos por qué no podemos usar las counts para comparar expresión de genes, necesitamos métodos de normalización.
+
+These are some of the common normalization methods used:
+
+ 1. RPKM
+ 2. FPKM
+ 3. TPM
+
+Higher the RPKM, FPM of a gene, higher is the expression
+Neither values can be used for differential gene expression analysis. 
+
+RPKM and FPKM and TPM:
+NO for DESeq2 porque aquí se comparan muestras con distintas condiciones biológicas para identificar genes que están diferencialmente expresados.
+
+
+TPM:
+Normalizes for gene lenght and sequencing depht.
+Is a better suited method  to compared expression between samples. 
+Just like RPMK and FPKM also can not be used for differential gene expression analysis.
+
+
+
+	PERFORMING RPKM NORMALIZATION
+
+Let's calculate RPKM value from the couont values.
+What we have here is a dummy count matrix but it is very similar to a real count matrix
+
+
+Genes lengths	Genes	Technical_replicate_1	 Techinical_replicate_2	   Techincal_replicate_3
+1.5Kb		gene_A		50			25			  85
+2Kb		gene_B		75			50			  90
+
+
+
+Row: Genes
+Column: replicates or samples.
+values: reads
+
+Notar que tenemos diferencia de profundidad de secuenciación entre los replicados
+
+La suma de los counts (125 para el replicado 1, 75 reads para el replicado 2 y 175 reads para el replicado 3) en cada replicado equivale al número total de reads mapeadas.
+
+
+RECORDAR: RPKM normaliza para sequencing Depth and Gene length
+
+1. Así que el primer paso es normalizar para: Sequencing Depth
+
+comenzamos calculando el RPM values (Reads Per Million)
+
+Para esto  dividimos las counts por el total del número de reads mapeadas, así que para las counts para el Gen A en el replicado 1 vamosa  dividir 50/125 (125 sería el total de las reads mapeadas). Nos da 0.4
+
+Para el Gen A del replicado 2 dividimos 25/75 = 0.33
+
+Para todos los counts values hacemos lo mismo y obtenemos los alores para el Sequencinig Depth
+
+
+
+2. Normalización para Gene Length
+
+Acá calculamos RPK (Reads Per Kilobase) kilobase = Kb
+
+Entonces para el Gene A si tenemos 1.5Kb de longitud para un RPM value de 4, cuántos tendríamos para 1kb
+
+1.5 Kb --- 4
+1 Kb --- X = 2.66
+
+Para el Gen B tenemos un rpm value de 6 y una longitud de 2kb
+
+2Kb --- 6 rpm
+1 --- x = 3 rpm
+
+
+Hacemos esto para todos los values y obtenemos todos los RPKM values.
+ESTOS SON LOS VALORES QUE ESTÁN NORMALIZADOS TANTO PARA EL SEQUENCING DEPTH COMO TB EL GENE LENGTH
+
+
+
+
+	PERFORMING TPM NORMALIZATION
+
+
+Step1: Normalization for Gene Length
+
+Obtenemos los RPK values y luego dividimos cada uno de los valores totales en 10 (scaling factor para esta demostración, pero es 10 a la 6)
+
+
+
+Step 2: Normalize for Sequencing Depth
+
+dividimos los valores corregidos de los counts (los RPK values) por los valores corregidos totales de los counts (los que dividimos en 10).
+Así que repetimos estas operaciones para todos los valores y obtenemos los TPM values
+
+
+
+
+
+
+
+
